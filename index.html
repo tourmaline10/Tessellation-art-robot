@@ -2,90 +2,129 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>敷き詰めデモ（簡易）</title>
+<title>敷き詰め模様デモ（教材用）</title>
 <style>
-  body { text-align: center; font-family: sans-serif; }
-  svg { border: 1px solid #333; margin-top: 10px; }
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    background: #fafafa;
+  }
+  svg {
+    background: #f0f0f0;
+    border: 1px solid #333;
+    margin-top: 10px;
+  }
+  .controls {
+    margin: 10px;
+  }
+  .note {
+    width: 400px;
+    margin: 10px auto;
+    font-size: 14px;
+    color: #333;
+  }
 </style>
 </head>
 <body>
 
-<h2>敷き詰め模様（簡易版）</h2>
+<h2>敷き詰め模様（簡易教材版）</h2>
 
-<select onchange="draw(this.value)">
-  <option value="square">正方形</option>
-  <option value="triangle">正三角形</option>
-  <option value="hex">正六角形</option>
-</select>
+<div class="controls">
+  図形：
+  <select id="shape" onchange="redraw()">
+    <option value="square">正方形</option>
+    <option value="triangle">正三角形</option>
+    <option value="hex">正六角形</option>
+  </select>
 
-<br>
+  色：
+  <select id="color" onchange="redraw()">
+    <option value="#88c">青</option>
+    <option value="#c88">赤</option>
+    <option value="#8c8">緑</option>
+    <option value="#fc8">黄</option>
+  </select>
+</div>
 
 <svg id="svg" width="400" height="400"
      viewBox="0 0 400 400"
      xmlns="http://www.w3.org/2000/svg"></svg>
 
+<div class="note" id="note"></div>
+
 <script>
 const svg = document.getElementById("svg");
+const note = document.getElementById("note");
 
-function clearSVG() {
-  while (svg.firstChild) svg.removeChild(svg.firstChild);
+function clearSVG(){
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
 }
 
-function draw(type) {
+function color(){
+  return document.getElementById("color").value;
+}
+
+function redraw(){
   clearSVG();
+  const shape = document.getElementById("shape").value;
+  if(shape==="square") drawSquare();
+  if(shape==="triangle") drawTriangle();
+  if(shape==="hex") drawHex();
+}
 
-  if (type === "square") {
-    for (let y = 0; y < 10; y++)
-      for (let x = 0; x < 10; x++) {
-        let r = document.createElementNS(svg.namespaceURI, "rect");
-        r.setAttribute("x", x*40);
-        r.setAttribute("y", y*40);
-        r.setAttribute("width", 40);
-        r.setAttribute("height", 40);
-        r.setAttribute("fill", "#88c");
-        svg.appendChild(r);
-      }
-  }
-
-  if (type === "triangle") {
-    for (let y = 0; y < 10; y++)
-      for (let x = 0; x < 10; x++) {
-        let p = document.createElementNS(svg.namespaceURI, "polygon");
-        let x0 = x*40, y0 = y*40;
-        p.setAttribute(
-          "points",
-          `${x0},${y0+40} ${x0+20},${y0} ${x0+40},${y0+40}`
-        );
-        p.setAttribute("fill", "#c88");
-        svg.appendChild(p);
-      }
-  }
-
-  if (type === "hex") {
-    const r = 20;
-    const h = Math.sqrt(3)*r;
-    for (let y = 0; y < 10; y++)
-      for (let x = 0; x < 10; x++) {
-        let cx = x*3*r + (y%2)*1.5*r;
-        let cy = y*h;
-        let pts = [];
-        for (let i=0;i<6;i++){
-          let a = Math.PI/3*i;
-          pts.push(
-            (cx + r*Math.cos(a)) + "," +
-            (cy + r*Math.sin(a))
-          );
-        }
-        let p = document.createElementNS(svg.namespaceURI, "polygon");
-        p.setAttribute("points", pts.join(" "));
-        p.setAttribute("fill", "#8c8");
-        svg.appendChild(p);
-      }
+/* 正方形 */
+function drawSquare(){
+  note.innerHTML = "正方形は 90°×4 = 360° になるため、隙間なく敷き詰められます。";
+  const s = 40;
+  for(let y=0;y<10;y++){
+    for(let x=0;x<10;x++){
+      let r = document.createElementNS(svg.namespaceURI,"rect");
+      r.setAttribute("x",x*s);
+      r.setAttribute("y",y*s);
+      r.setAttribute("width",s);
+      r.setAttribute("height",s);
+      r.setAttribute("fill",color());
+      svg.appendChild(r);
+    }
   }
 }
 
-draw("square");
-</script>
+/* 正三角形 */
+function drawTriangle(){
+  note.innerHTML = "正三角形は 60°×6 = 360° になるため、敷き詰めが可能です。";
+  const s = 40;
+  const h = s*Math.sqrt(3)/2;
+  for(let y=0;y<12;y++){
+    for(let x=0;x<12;x++){
+      let p = document.createElementNS(svg.namespaceURI,"polygon");
+      let x0 = x*s/2;
+      let y0 = y*h;
+      let up = (x+y)%2===0;
+      let pts = up
+        ? `${x0},${y0+h} ${x0+s/2},${y0} ${x0+s},${y0+h}`
+        : `${x0},${y0} ${x0+s},${y0} ${x0+s/2},${y0+h}`;
+      p.setAttribute("points",pts);
+      p.setAttribute("fill",color());
+      svg.appendChild(p);
+    }
+  }
+}
 
-</body>
-</html>
+/* 正六角形 */
+function drawHex(){
+  note.innerHTML = "正六角形は 120°×3 = 360° になるため、敷き詰められます。";
+  const r = 20;
+  const h = Math.sqrt(3)*r;
+  for(let y=0;y<12;y++){
+    for(let x=0;x<12;x++){
+      let cx = x*3*r + (y%2)*1.5*r;
+      let cy = y*h;
+      let pts = [];
+      for(let i=0;i<6;i++){
+        let a = Math.PI/3*i;
+        pts.push(
+          (cx + r*Math.cos(a)) + "," +
+          (cy + r*Math.sin(a))
+        );
+      }
+      let p = document.createElementNS(svg.namespaceURI,"polygon
