@@ -117,7 +117,7 @@ function drawHex() {
     "正三角形が集まると、正六角形の敷き詰めになります（120°×3）。";
 }
 
-/* ---------- 正三角形（全面敷き詰め） ---------- */
+/* ---------- 正三角形（辺でくっつく敷き詰め） ---------- */
 function triPoints(x, y, s, up) {
   const h = Math.sqrt(3) / 2 * s;
   return up
@@ -129,9 +129,9 @@ function drawTri() {
   const s = 40;
   const h = Math.sqrt(3) / 2 * s;
 
-  for (let row = -2; row < 20; row++) {
-    for (let col = -2; col < 20; col++) {
-      const x = col * s;
+  for (let row = -2; row < 30; row++) {
+    for (let col = -2; col < 30; col++) {
+      const x = col * (s / 2);
       const y = row * h;
       const up = (row + col) % 2 === 0;
 
@@ -139,13 +139,13 @@ function drawTri() {
       p.setAttribute("points", triPoints(x, y, s, up));
       p.setAttribute("fill", color(col, row));
       p.setAttribute("stroke", "white");
-      p.setAttribute("stroke-width", "1.5");
+      p.setAttribute("stroke-width", "1.2");
       layer().appendChild(p);
     }
   }
 
   document.getElementById("comment").textContent =
-    "正三角形は 60°×6 = 360° で、全面に敷き詰められます。";
+    "正三角形は辺どうしがぴったり重なり、60°×6 = 360° で敷き詰められます。";
 }
 
 /* ---------- 正方形（全面敷き詰め） ---------- */
