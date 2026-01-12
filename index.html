@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>敷き詰めアートロボット</title>
+<title>敷き詰めアートロボット（教材版）</title>
 <style>
   body {
     font-family: sans-serif;
@@ -14,7 +14,7 @@
     border: 1px solid #999;
   }
   .controls {
-    margin: 10px;
+    margin: 12px;
   }
 </style>
 </head>
@@ -25,16 +25,16 @@
 <div class="controls">
   図形：
   <select id="shape" onchange="redraw()">
-    <option value="hex">六角形</option>
-    <option value="tri">正三角形</option>
     <option value="square">正方形</option>
+    <option value="tri">正三角形</option>
+    <option value="hex">正六角形</option>
   </select>
 
   色A：
-  <input type="color" id="colorA" value="#ffffff" onchange="redraw()">
+  <input type="color" id="colorA" value="#c21807" onchange="redraw()">
 
   色B：
-  <input type="color" id="colorB" value="#555555" onchange="redraw()">
+  <input type="color" id="colorB" value="#000000" onchange="redraw()">
 </div>
 
 <svg id="svg" width="500" height="500"></svg>
@@ -46,16 +46,9 @@ const svg = document.getElementById("svg");
 const W = 500;
 const H = 500;
 
+/* ---------- 共通 ---------- */
 function clearSVG() {
   svg.innerHTML = `<rect width="${W}" height="${H}" fill="white"/>`;
-}
-
-function redraw() {
-  clearSVG();
-  const shape = document.getElementById("shape").value;
-  if (shape === "hex") drawHex();
-  if (shape === "tri") drawTri();
-  if (shape === "square") drawSquare();
 }
 
 function color(x, y) {
@@ -64,68 +57,12 @@ function color(x, y) {
   return (x + y) % 2 === 0 ? a : b;
 }
 
-/* ---------- 六角形 ---------- */
-function hexPoints(cx, cy, r) {
-  let pts = [];
-  for (let i = 0; i < 6; i++) {
-    let a = Math.PI / 3 * i + Math.PI / 6;
-    pts.push(cx + r * Math.cos(a) + "," + (cy + r * Math.sin(a)));
-  }
-  return pts.join(" ");
-}
-
-function drawHex() {
-  const r = 40;
-  const w = 1.5 * r;
-  const h = Math.sqrt(3) * r;
-
-  for (let y = -2; y < 20; y++) {
-    for (let x = -2; x < 20; x++) {
-      const cx = x * w + (y % 2) * (w / 2);
-      const cy = y * h * 0.5;
-
-      const p = document.createElementNS("http://www.w3.org/2000/svg","polygon");
-      p.setAttribute("points", hexPoints(cx, cy, r));
-      p.setAttribute("fill", color(x, y));
-      p.setAttribute("stroke", "white");
-      p.setAttribute("stroke-width", "2");
-      svg.appendChild(p);
-    }
-  }
-  document.getElementById("comment").textContent =
-    "正六角形は 120°×3 = 360° となり、敷き詰めが可能です。";
-}
-
-/* ---------- 正三角形 ---------- */
-function triPoints(cx, cy, r, up) {
-  let pts = [];
-  for (let i = 0; i < 3; i++) {
-    let a = (up ? 0 : Math.PI) + i * 2 * Math.PI / 3 - Math.PI / 2;
-    pts.push(cx + r * Math.cos(a) + "," + (cy + r * Math.sin(a)));
-  }
-  return pts.join(" ");
-}
-
-function drawTri() {
-  const r = 30;
-  const h = Math.sqrt(3) * r;
-
-  for (let y = -2; y < 25; y++) {
-    for (let x = -2; x < 25; x++) {
-      const cx = x * r * 1.5;
-      const cy = y * h / 2;
-      const up = (x + y) % 2 === 0;
-
-      const p = document.createElementNS("http://www.w3.org/2000/svg","polygon");
-      p.setAttribute("points", triPoints(cx, cy, r, up));
-      p.setAttribute("fill", color(x, y));
-      p.setAttribute("stroke", "white");
-      p.setAttribute("stroke-width", "1.5");
-      svg.appendChild(p);
-    }
-  }
-  document.getElementById("comment").textContent =
-    "正三角形は 60°×6 = 360° となり、敷き詰めが可能です。";
+function redraw() {
+  clearSVG();
+  const shape = document.getElementById("shape").value;
+  if (shape === "square") drawSquare();
+  if (shape === "tri") drawTri();
+  if (shape === "hex") drawHex();
 }
 
 /* ---------- 正方形 ---------- */
@@ -145,10 +82,78 @@ function drawSquare() {
       svg.appendChild(r);
     }
   }
+
   document.getElementById("comment").textContent =
-    "正方形は 90°×4 = 360° となり、敷き詰めが可能です。";
+    "正方形は 90° × 4 = 360° となり、敷き詰めが可能です。";
 }
 
+/* ---------- 正三角形 ---------- */
+function triPoints(cx, cy, r, up) {
+  let pts = [];
+  for (let i = 0; i < 3; i++) {
+    let a = (up ? 0 : Math.PI) + i * 2 * Math.PI / 3 - Math.PI / 2;
+    pts.push(cx + r * Math.cos(a) + "," + (cy + r * Math.sin(a)));
+  }
+  return pts.join(" ");
+}
+
+function drawTri() {
+  const r = 30;
+  const h = Math.sqrt(3) * r;
+
+  for (let row = -2; row < 30; row++) {
+    for (let col = -2; col < 30; col++) {
+      const cx = col * r + (row % 2) * (r / 2);
+      const cy = row * (h / 2);
+      const up = (row + col) % 2 === 0;
+
+      const p = document.createElementNS("http://www.w3.org/2000/svg","polygon");
+      p.setAttribute("points", triPoints(cx, cy, r, up));
+      p.setAttribute("fill", color(col, row));
+      p.setAttribute("stroke", "white");
+      p.setAttribute("stroke-width", "1.5");
+      svg.appendChild(p);
+    }
+  }
+
+  document.getElementById("comment").textContent =
+    "正三角形は 60° × 6 = 360° となり、敷き詰めが可能です。";
+}
+
+/* ---------- 正六角形 ---------- */
+function hexPoints(cx, cy, r) {
+  let pts = [];
+  for (let i = 0; i < 6; i++) {
+    let a = Math.PI / 3 * i + Math.PI / 6;
+    pts.push(cx + r * Math.cos(a) + "," + (cy + r * Math.sin(a)));
+  }
+  return pts.join(" ");
+}
+
+function drawHex() {
+  const r = 40;
+  const dx = 1.5 * r;
+  const dy = Math.sqrt(3) * r;
+
+  for (let row = -2; row < 20; row++) {
+    for (let col = -2; col < 20; col++) {
+      const cx = col * dx;
+      const cy = row * dy + (col % 2) * (dy / 2);
+
+      const p = document.createElementNS("http://www.w3.org/2000/svg","polygon");
+      p.setAttribute("points", hexPoints(cx, cy, r));
+      p.setAttribute("fill", color(col, row));
+      p.setAttribute("stroke", "white");
+      p.setAttribute("stroke-width", "2");
+      svg.appendChild(p);
+    }
+  }
+
+  document.getElementById("comment").textContent =
+    "正六角形は 120° × 3 = 360° となり、敷き詰めが可能です。";
+}
+
+/* 初期描画 */
 redraw();
 </script>
 
