@@ -1,138 +1,90 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<title>Tessellation Art Robot</title>
-
+<meta charset="UTF-8">
+<title>敷き詰めデモ（簡易）</title>
 <style>
-  body {
-    font-family: system-ui, sans-serif;
-    text-align: center;
-    background: #f5f5f5;
-  }
-  svg {
-    background: white;
-    margin: 16px auto;
-    display: block;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  }
-  button, select {
-    padding: 10px 16px;
-    margin: 6px;
-    font-size: 16px;
-  }
+  body { text-align: center; font-family: sans-serif; }
+  svg { border: 1px solid #333; margin-top: 10px; }
 </style>
 </head>
-
 <body>
 
-<h1>🎨 Tessellation Art Robot</h1>
+<h2>敷き詰め模様（簡易版）</h2>
 
-<select id="pattern">
-  <option value="square">□ 四角</option>
-  <option value="circle">○ 円</option>
-  <option value="triangle">△ 三角</option>
+<select onchange="draw(this.value)">
+  <option value="square">正方形</option>
+  <option value="triangle">正三角形</option>
+  <option value="hex">正六角形</option>
 </select>
 
 <br>
 
-<button id="regen">🔁 再生成</button>
-<button id="save">💾 PNG保存</button>
-
-<svg
-  id="art"
-  width="400"
-  height="400"
-  viewBox="0 0 400 400"
-  xmlns="http://www.w3.org/2000/svg">
-</svg>
+<svg id="svg" width="400" height="400"
+     viewBox="0 0 400 400"
+     xmlns="http://www.w3.org/2000/svg"></svg>
 
 <script>
-const SIZE = 40;
-const ROWS = 10;
-const COLS = 10;
+const svg = document.getElementById("svg");
 
-function rand(max) {
-  return Math.floor(Math.random() * max);
+function clearSVG() {
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
 }
 
-function randomColor() {
-  return `rgb(${rand(256)}, ${rand(256)}, ${rand(256)})`;
-}
+function draw(type) {
+  clearSVG();
 
-function generate() {
-  const svg = document.getElementById('art');
-  const pattern = document.getElementById('pattern').value;
-
-  while (svg.firstChild) {
-    svg.removeChild(svg.firstChild);
-  }
-
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
-
-      if (pattern === 'square') {
-        const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        r.setAttribute('x', x * SIZE);
-        r.setAttribute('y', y * SIZE);
-        r.setAttribute('width', SIZE);
-        r.setAttribute('height', SIZE);
-        r.setAttribute('fill', randomColor());
+  if (type === "square") {
+    for (let y = 0; y < 10; y++)
+      for (let x = 0; x < 10; x++) {
+        let r = document.createElementNS(svg.namespaceURI, "rect");
+        r.setAttribute("x", x*40);
+        r.setAttribute("y", y*40);
+        r.setAttribute("width", 40);
+        r.setAttribute("height", 40);
+        r.setAttribute("fill", "#88c");
         svg.appendChild(r);
       }
+  }
 
-      if (pattern === 'circle') {
-        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        c.setAttribute('cx', x * SIZE + SIZE / 2);
-        c.setAttribute('cy', y * SIZE + SIZE / 2);
-        c.setAttribute('r', SIZE / 2);
-        c.setAttribute('fill', randomColor());
-        svg.appendChild(c);
-      }
-
-      if (pattern === 'triangle') {
-        const p = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        const x0 = x * SIZE;
-        const y0 = y * SIZE;
+  if (type === "triangle") {
+    for (let y = 0; y < 10; y++)
+      for (let x = 0; x < 10; x++) {
+        let p = document.createElementNS(svg.namespaceURI, "polygon");
+        let x0 = x*40, y0 = y*40;
         p.setAttribute(
-          'points',
-          `${x0},${y0 + SIZE} ${x0 + SIZE / 2},${y0} ${x0 + SIZE},${y0 + SIZE}`
+          "points",
+          `${x0},${y0+40} ${x0+20},${y0} ${x0+40},${y0+40}`
         );
-        p.setAttribute('fill', randomColor());
+        p.setAttribute("fill", "#c88");
         svg.appendChild(p);
       }
-    }
+  }
+
+  if (type === "hex") {
+    const r = 20;
+    const h = Math.sqrt(3)*r;
+    for (let y = 0; y < 10; y++)
+      for (let x = 0; x < 10; x++) {
+        let cx = x*3*r + (y%2)*1.5*r;
+        let cy = y*h;
+        let pts = [];
+        for (let i=0;i<6;i++){
+          let a = Math.PI/3*i;
+          pts.push(
+            (cx + r*Math.cos(a)) + "," +
+            (cy + r*Math.sin(a))
+          );
+        }
+        let p = document.createElementNS(svg.namespaceURI, "polygon");
+        p.setAttribute("points", pts.join(" "));
+        p.setAttribute("fill", "#8c8");
+        svg.appendChild(p);
+      }
   }
 }
 
-/* Safari対応 PNG保存 */
-function savePNG() {
-  const svg = document.getElementById('art');
-  const data = new XMLSerializer().serializeToString(svg);
-  const svgBlob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
-  const url = URL.createObjectURL(svgBlob);
-
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 400;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    URL.revokeObjectURL(url);
-
-    const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = 'tessellation-art.png';
-    a.click();
-  };
-  img.src = url;
-}
-
-document.getElementById('regen').onclick = generate;
-document.getElementById('save').onclick = savePNG;
-
-generate();
+draw("square");
 </script>
 
 </body>
