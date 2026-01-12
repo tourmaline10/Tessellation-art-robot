@@ -129,8 +129,9 @@ function drawTri() {
   const s = 40;
   const h = Math.sqrt(3) / 2 * s;
 
-  for (let row = -2; row < 30; row++) {
-    for (let col = -2; col < 30; col++) {
+  for (let row = -20; row < 40; row++) {
+  for (let col = -20; col < 40; col++) {
+
       const x = col * (s / 2);
       const y = row * h;
       const up = (row + col) % 2 === 0;
@@ -152,8 +153,9 @@ function drawTri() {
 function drawSquare() {
   const s = 40;
 
-  for (let y = -1; y < 15; y++) {
-    for (let x = -1; x < 15; x++) {
+  for (let y = -20; y < 40; y++) {
+  for (let x = -20; x < 40; x++) {
+
       const r = document.createElementNS(NS,"rect");
       r.setAttribute("x", x * s);
       r.setAttribute("y", y * s);
