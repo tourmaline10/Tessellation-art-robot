@@ -1,21 +1,69 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>Test</title>
+  <meta charset="UTF-8" />
+  <title>Tessellation Art Robot</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      text-align: center;
+      background: #f5f5f5;
+    }
+    svg {
+      background: white;
+      margin: 16px auto;
+      display: block;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    button, select {
+      padding: 10px 16px;
+      margin: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
-<h1>動作テスト</h1>
-<button onclick="test()">クリック</button>
+<h1>🎨 Tessellation Art Robot</h1>
 
-<div id="box" style="width:100px;height:100px;background:red;"></div>
+<select id="pattern">
+  <option value="square">□ 四角</option>
+  <option value="circle">○ 円</option>
+  <option value="triangle">△ 三角</option>
+</select>
+
+<br />
+
+<button onclick="generate()">🔁 再生成</button>
+<button onclick="saveImage()">💾 画像として保存</button>
+
+<svg id="art" width="400" height="400"></svg>
 
 <script>
-function test() {
-  document.getElementById('box').style.background = 'blue';
-}
-</script>
+  const SIZE = 40;
+  const ROWS = 10;
+  const COLS = 10;
 
-</body>
-</html>
+  function rand(max) {
+    return Math.floor(Math.random() * max);
+  }
+
+  function randomColor() {
+    return `rgb(${rand(256)}, ${rand(256)}, ${rand(256)})`;
+  }
+
+  function generate() {
+    const svg = document.getElementById('art');
+    const pattern = document.getElementById('pattern').value;
+    svg.innerHTML = '';
+
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+
+        if (pattern === 'square') {
+          const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          r.setAttribute('x', x * SIZE);
+          r.setAttribute('y', y * SIZE);
+          r.setAttribute('width', SIZE);
+          r.setAttribute('height
