@@ -2,135 +2,136 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>正多角形の敷き詰め 完成版</title>
+<title>敷き詰めアート（正方形タイル集合）</title>
 <style>
   body {
-    font-family: sans-serif;
-    text-align: center;
-    background: #f5f5f5;
+    background:#f4f4f4;
+    font-family:sans-serif;
+    text-align:center;
   }
   svg {
-    background: white;
-    border: 1px solid #999;
+    background:white;
+    border:2px solid #333;
   }
-  .controls {
-    margin: 10px;
+  .note {
+    margin-top:8px;
+    font-size:14px;
+    color:#555;
   }
 </style>
 </head>
 <body>
 
-<h2>正多角形は平面を敷き詰められる？</h2>
+<h2>敷き詰めアート</h2>
 
-<div class="controls">
-  図形：
-  <select id="shape" onchange="draw()">
-    <option value="3">正三角形</option>
-    <option value="4">正方形</option>
-    <option value="5">正五角形</option>
-    <option value="6">正六角形</option>
-    <option value="other">その他</option>
-  </select>
+<svg id="svg" width="420" height="420"></svg>
 
-  集める枚数：
-  <input type="number" id="count" value="3" min="1" max="8" onchange="draw()" style="width:50px">
+<div class="note">
+角のまわりに集まる角度が 360° になると、すき間なく並びます。
 </div>
-
-<svg id="svg" width="320" height="320"></svg>
-
-<p id="comment"></p>
 
 <script>
 const svg = document.getElementById("svg");
-const size = 200;   // 1cm相当
-const margin = 60;
-const cx = margin + size / 2;
-const cy = margin + size / 2;
+const TILE = 140;
+const NS = "http://www.w3.org/2000/svg";
 
-function clear() {
-  svg.innerHTML = "";
-}
-
-function frame() {
-  const r = document.createElementNS("http://www.w3.org/2000/svg","rect");
-  r.setAttribute("x", margin);
-  r.setAttribute("y", margin);
-  r.setAttribute("width", size);
-  r.setAttribute("height", size);
-  r.setAttribute("fill", "#eee");
-  r.setAttribute("stroke", "black");
-  r.setAttribute("stroke-width", 2);
+function drawFrame(x,y){
+  const r = document.createElementNS(NS,"rect");
+  r.setAttribute("x",x);
+  r.setAttribute("y",y);
+  r.setAttribute("width",TILE);
+  r.setAttribute("height",TILE);
+  r.setAttribute("fill","white");
+  r.setAttribute("stroke","#999");
+  r.setAttribute("stroke-width","2");
   svg.appendChild(r);
 }
 
-function polygonPoints(n, r, rot, dx, dy) {
-  let pts = [];
-  for (let i = 0; i < n; i++) {
-    const a = 2 * Math.PI * i / n - Math.PI / 2 + rot;
-    pts.push(
-      cx + dx + r * Math.cos(a) + "," +
-      (cy + dy + r * Math.sin(a))
-    );
-  }
-  return pts.join(" ");
-}
-
-function drawPolygon(n, r, rot, dx, dy, stroke = 2) {
-  const p = document.createElementNS("http://www.w3.org/2000/svg","polygon");
-  p.setAttribute("points", polygonPoints(n, r, rot, dx, dy));
-  p.setAttribute("fill", "#90caf9");
-  p.setAttribute("stroke", "black");
-  p.setAttribute("stroke-width", stroke);
+function polygon(points,fill,stroke="white",sw=1){
+  const p = document.createElementNS(NS,"polygon");
+  p.setAttribute("points",points);
+  p.setAttribute("fill",fill);
+  p.setAttribute("stroke",stroke);
+  p.setAttribute("stroke-width",sw);
   svg.appendChild(p);
 }
 
-function drawAngleText(text) {
-  const t = document.createElementNS("http://www.w3.org/2000/svg","text");
-  t.setAttribute("x", cx);
-  t.setAttribute("y", margin - 15);
-  t.setAttribute("text-anchor", "middle");
-  t.setAttribute("font-size", "14");
-  t.textContent = text;
-  svg.appendChild(t);
-}
-
-function draw() {
-  clear();
-  frame();
-
-  const shapeVal = document.getElementById("shape").value;
-  const k = parseInt(document.getElementById("count").value, 10);
-
-  if (shapeVal === "other") {
-    comment.textContent =
-      "正三角形・正方形・正六角形以外の正多角形は、どの枚数でも360°にならず、敷き詰めできません。";
-    return;
-  }
-
-  const n = parseInt(shapeVal, 10);
-  const angle = (n - 2) * 180 / n;      // 内角
-  const total = angle * k;
-
-  // 中心角まわりに配置（敷き詰め試行）
-  const r = 55;
-  for (let i = 0; i < k; i++) {
-    const rot = i * angle * Math.PI / 180;
-    drawPolygon(n, r, rot, 0, 0, i === 0 ? 4 : 2);
-  }
-
-  drawAngleText(`内角：${angle.toFixed(1)}° ／ 合計：${total.toFixed(1)}°`);
-
-  if (Math.abs(total - 360) < 0.01) {
-    comment.textContent =
-      `内角 ${angle.toFixed(1)}° × ${k} = 360° → 敷き詰め可能`;
-  } else {
-    comment.textContent =
-      `内角 ${angle.toFixed(1)}° × ${k} = ${total.toFixed(1)}° → 360°にならず敷き詰め不可`;
+/* 三角形タイル */
+function triTile(ox,oy){
+  const r=30, h=Math.sqrt(3)*r;
+  for(let y=0;y<4;y++){
+    for(let x=0;x<4;x++){
+      const up=(x+y)%2===0;
+      const cx=ox+x*r+r;
+      const cy=oy+y*h/2+r;
+      let pts=[];
+      for(let i=0;i<3;i++){
+        let a=(up?0:Math.PI)+i*2*Math.PI/3-Math.PI/2;
+        pts.push(cx+r*Math.cos(a)+","+(cy+r*Math.sin(a)));
+      }
+      polygon(pts.join(" "),"#cfe8ff");
+    }
   }
 }
 
-draw();
+/* 正方形タイル */
+function squareTile(ox,oy){
+  const s=35;
+  for(let y=0;y<4;y++){
+    for(let x=0;x<4;x++){
+      const r=document.createElementNS(NS,"rect");
+      r.setAttribute("x",ox+x*s);
+      r.setAttribute("y",oy+y*s);
+      r.setAttribute("width",s);
+      r.setAttribute("height",s);
+      r.setAttribute("fill","#ddd");
+      r.setAttribute("stroke","white");
+      r.setAttribute("stroke-width","2");
+      svg.appendChild(r);
+    }
+  }
+}
+
+/* 六角形タイル */
+function hexTile(ox,oy){
+  const r=20, w=1.5*r, h=Math.sqrt(3)*r;
+  for(let y=0;y<5;y++){
+    for(let x=0;x<5;x++){
+      const cx=ox+x*w+r+(y%2)*w/2;
+      const cy=oy+y*h*0.5+r;
+      if(cx+r>ox+TILE||cy+r>oy+TILE)continue;
+      let pts=[];
+      for(let i=0;i<6;i++){
+        let a=i*Math.PI/3+Math.PI/6;
+        pts.push(cx+r*Math.cos(a)+","+(cy+r*Math.sin(a)));
+      }
+      polygon(pts.join(" "),"#d7efd7");
+    }
+  }
+}
+
+/* 五角形タイル（成立しない） */
+function pentTile(ox,oy){
+  const cx=ox+TILE/2, cy=oy+TILE/2, r=45;
+  for(let k=0;k<3;k++){
+    let pts=[];
+    for(let i=0;i<5;i++){
+      let a=i*2*Math.PI/5-Math.PI/2+k*2*Math.PI/5;
+      pts.push(cx+r*Math.cos(a)+","+(cy+r*Math.sin(a)));
+    }
+    polygon(pts.join(" "),"#f4c7b7","#aa6666",k===0?3:1);
+  }
+}
+
+/* 配置 */
+drawFrame(0,0);      triTile(0,0);
+drawFrame(140,0);    squareTile(140,0);
+drawFrame(280,0);    hexTile(280,0);
+
+drawFrame(70,140);   pentTile(70,140);
+
 </script>
 
 </body>
 </html>
+
