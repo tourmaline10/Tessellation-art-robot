@@ -49,7 +49,6 @@
 <p id="comment"></p>
 
 <script>
-const RANGE = 40; // ← 描画をキャンバス外まで広げる
 const svg = document.getElementById("svg");
 const W = 500;
 const H = 500;
@@ -85,29 +84,37 @@ function redraw() {
   if (shape === "square") drawSquare();
 }
 
+/* ---------- 正六角形（全面敷き詰め） ---------- */
+function hexPoints(cx, cy, r) {
+  let pts = [];
+  for (let i = 0; i < 6; i++) {
+    const a = Math.PI / 3 * i + Math.PI / 6;
+    pts.push(cx + r * Math.cos(a) + "," + (cy + r * Math.sin(a)));
+  }
+  return pts.join(" ");
+}
+
 function drawHex() {
   const r = 30;
   const dx = Math.sqrt(3) * r;
   const dy = 1.5 * r;
 
-  for (let row = -RANGE; row < RANGE; row++) {
-    for (let col = -RANGE; col < RANGE; col++) {
-
-      const cx = W/2 + col * dx + (row % 2) * (dx / 2);
-      const cy = H/2 + row * dy;
+  for (let row = -2; row < 20; row++) {
+    for (let col = -2; col < 20; col++) {
+      const cx = col * dx + (row % 2) * (dx / 2);
+      const cy = row * dy;
 
       const p = document.createElementNS(NS,"polygon");
       p.setAttribute("points", hexPoints(cx, cy, r));
       p.setAttribute("fill", color(col, row));
       p.setAttribute("stroke", "white");
       p.setAttribute("stroke-width", "2");
-
       layer().appendChild(p);
     }
   }
 
   document.getElementById("comment").textContent =
-    "正六角形は 120°×3 = 360° となり、すき間なく敷き詰められます。";
+    "正三角形が6つ集まると、正六角形の敷き詰めになります（120°×3）。";
 }
 
 /* ---------- 正三角形（辺でくっつく敷き詰め） ---------- */
@@ -122,20 +129,20 @@ function drawTri() {
   const s = 40;
   const h = Math.sqrt(3) / 2 * s;
 
-  for (let row = -RANGE; row < RANGE; row++) {
-  for (let col = -RANGE; col < RANGE; col++) {
-    const x = col * (s / 2);
-    const y = row * h;
-    const up = (row + col) % 2 === 0;
+  for (let row = -2; row < 30; row++) {
+    for (let col = -2; col < 30; col++) {
+      const x = col * (s / 2);
+      const y = row * h;
+      const up = (row + col) % 2 === 0;
 
-    const p = document.createElementNS(NS,"polygon");
-    p.setAttribute("points", triPoints(x, y, s, up));
-    p.setAttribute("fill", color(col, row));
-    p.setAttribute("stroke", "white");
-    p.setAttribute("stroke-width", "1.2");
-    layer().appendChild(p);
+      const p = document.createElementNS(NS,"polygon");
+      p.setAttribute("points", triPoints(x, y, s, up));
+      p.setAttribute("fill", color(col, row));
+      p.setAttribute("stroke", "white");
+      p.setAttribute("stroke-width", "1.2");
+      layer().appendChild(p);
+    }
   }
-}
 
   document.getElementById("comment").textContent =
     "正三角形は辺どうしがぴったり重なり、60°×6 = 360° で敷き詰められます。";
@@ -148,8 +155,8 @@ function drawSquare() {
   for (let y = -1; y < 15; y++) {
     for (let x = -1; x < 15; x++) {
       const r = document.createElementNS(NS,"rect");
-　　　  r.setAttribute("x", W/2 + x * s);
-　　　　r.setAttribute("y", H/2 + y * s);
+      r.setAttribute("x", x * s);
+      r.setAttribute("y", y * s);
       r.setAttribute("width", s);
       r.setAttribute("height", s);
       r.setAttribute("fill", color(x, y));
