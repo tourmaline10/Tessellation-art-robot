@@ -25,9 +25,18 @@
 <div class="controls">
   図形：
   <select id="shape" onchange="redraw()">
-    <option value="square">正方形</option>
     <option value="tri">正三角形</option>
-    <option value="hex">六角形</option>
+    <option value="square">正方形</option>
+    <option value="hex">正六角形</option>
+  </select>
+
+  回転：
+  <select id="rotate" onchange="redraw()">
+    <option value="0">0°</option>
+    <option value="60">60°</option>
+    <option value="90">90°</option>
+    <option value="120">120°</option>
+    <option value="180">180°</option>
   </select>
 
   色A：
@@ -46,7 +55,19 @@ const H = 500;
 const NS = "http://www.w3.org/2000/svg";
 
 function clearSVG() {
-  svg.innerHTML = `<rect width="${W}" height="${H}" fill="white"/>`;
+  svg.innerHTML = "";
+  const g = document.createElementNS(NS,"g");
+  const rot = document.getElementById("rotate").value;
+  g.setAttribute(
+    "transform",
+    `rotate(${rot}, ${W/2}, ${H/2})`
+  );
+  g.setAttribute("id","layer");
+  svg.appendChild(g);
+}
+
+function layer() {
+  return document.getElementById("layer");
 }
 
 function color(x, y) {
@@ -63,7 +84,7 @@ function redraw() {
   if (shape === "square") drawSquare();
 }
 
-/* ---------- 正六角形（完全一致配置） ---------- */
+/* ---------- 正六角形（全面敷き詰め） ---------- */
 function hexPoints(cx, cy, r) {
   let pts = [];
   for (let i = 0; i < 6; i++) {
@@ -78,67 +99,61 @@ function drawHex() {
   const dx = Math.sqrt(3) * r;
   const dy = 1.5 * r;
 
-  for (let row = 0; row < 20; row++) {
-    for (let col = 0; col < 20; col++) {
+  for (let row = -2; row < 20; row++) {
+    for (let col = -2; col < 20; col++) {
       const cx = col * dx + (row % 2) * (dx / 2);
       const cy = row * dy;
 
-      if (cx - r < 0 || cy - r < 0 || cx + r > W || cy + r > H) continue;
-
-      const p = document.createElementNS(NS, "polygon");
+      const p = document.createElementNS(NS,"polygon");
       p.setAttribute("points", hexPoints(cx, cy, r));
       p.setAttribute("fill", color(col, row));
       p.setAttribute("stroke", "white");
       p.setAttribute("stroke-width", "2");
-      svg.appendChild(p);
+      layer().appendChild(p);
     }
   }
 
   document.getElementById("comment").textContent =
-    "正六角形：120° × 3 = 360° → 重なりなく敷き詰め可能";
+    "正三角形が集まると、正六角形の敷き詰めになります（120°×3）。";
 }
 
-/* ---------- 正三角形（辺長ベース） ---------- */
+/* ---------- 正三角形（全面敷き詰め） ---------- */
 function triPoints(x, y, s, up) {
   const h = Math.sqrt(3) / 2 * s;
-  if (up) {
-    return `${x},${y+h} ${x+s/2},${y} ${x+s},${y+h}`;
-  } else {
-    return `${x},${y} ${x+s},${y} ${x+s/2},${y+h}`;
-  }
+  return up
+    ? `${x},${y+h} ${x+s/2},${y} ${x+s},${y+h}`
+    : `${x},${y} ${x+s},${y} ${x+s/2},${y+h}`;
 }
 
 function drawTri() {
   const s = 40;
   const h = Math.sqrt(3) / 2 * s;
 
-  for (let row = 0; row < 20; row++) {
-    for (let col = 0; col < 20; col++) {
+  for (let row = -2; row < 20; row++) {
+    for (let col = -2; col < 20; col++) {
       const x = col * s;
       const y = row * h;
       const up = (row + col) % 2 === 0;
 
-      if (x + s > W || y + h > H) continue;
-
-      const p = document.createElementNS(NS, "polygon");
+      const p = document.createElementNS(NS,"polygon");
       p.setAttribute("points", triPoints(x, y, s, up));
       p.setAttribute("fill", color(col, row));
       p.setAttribute("stroke", "white");
       p.setAttribute("stroke-width", "1.5");
-      svg.appendChild(p);
+      layer().appendChild(p);
     }
   }
 
   document.getElementById("comment").textContent =
-    "正三角形：60° × 6 = 360° → 重なりなく敷き詰め可能";
+    "正三角形は 60°×6 = 360° で、全面に敷き詰められます。";
 }
 
-/* ---------- 正方形（元コードそのまま） ---------- */
+/* ---------- 正方形（全面敷き詰め） ---------- */
 function drawSquare() {
   const s = 40;
 
-  for (let y = 0; y < 13; y++) {
-    for (let x = 0; x < 13; x++) {
+  for (let y = -1; y < 15; y++) {
+    for (let x = -1; x < 15; x++) {
       const r = document.createElementNS(NS,"rect");
       r.setAttribute("x", x * s);
       r.setAttribute("y", y * s);
@@ -147,12 +162,12 @@ function drawSquare() {
       r.setAttribute("fill", color(x, y));
       r.setAttribute("stroke", "white");
       r.setAttribute("stroke-width", "2");
-      svg.appendChild(r);
+      layer().appendChild(r);
     }
   }
 
   document.getElementById("comment").textContent =
-    "正方形：90° × 4 = 360° → 完全敷き詰め";
+    "正方形は 90°×4 = 360° で、完全に敷き詰められます。";
 }
 
 redraw();
