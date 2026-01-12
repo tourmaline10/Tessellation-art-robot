@@ -127,4 +127,17 @@ function drawHex(){
           (cy + r*Math.sin(a))
         );
       }
-      let p = document.createElementNS(svg.namespaceURI,"polygon
+      let p = document.createElementNS(svg.namespaceURI,"polygon");
+      p.setAttribute("points",pts.join(" "));
+      p.setAttribute("fill",color());
+      svg.appendChild(p);
+    }
+  }
+}
+
+redraw();
+</script>
+
+</body>
+</html>
+
