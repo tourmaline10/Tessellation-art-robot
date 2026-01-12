@@ -62,4 +62,78 @@ function randomColor() {
 
 function generate() {
   const svg = document.getElementById('art');
-  const pattern = docu
+  const pattern = document.getElementById('pattern').value;
+
+  while (svg.firstChild) {
+    svg.removeChild(svg.firstChild);
+  }
+
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+
+      if (pattern === 'square') {
+        const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        r.setAttribute('x', x * SIZE);
+        r.setAttribute('y', y * SIZE);
+        r.setAttribute('width', SIZE);
+        r.setAttribute('height', SIZE);
+        r.setAttribute('fill', randomColor());
+        svg.appendChild(r);
+      }
+
+      if (pattern === 'circle') {
+        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        c.setAttribute('cx', x * SIZE + SIZE / 2);
+        c.setAttribute('cy', y * SIZE + SIZE / 2);
+        c.setAttribute('r', SIZE / 2);
+        c.setAttribute('fill', randomColor());
+        svg.appendChild(c);
+      }
+
+      if (pattern === 'triangle') {
+        const p = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        const x0 = x * SIZE;
+        const y0 = y * SIZE;
+        p.setAttribute(
+          'points',
+          `${x0},${y0 + SIZE} ${x0 + SIZE / 2},${y0} ${x0 + SIZE},${y0 + SIZE}`
+        );
+        p.setAttribute('fill', randomColor());
+        svg.appendChild(p);
+      }
+    }
+  }
+}
+
+/* Safari対応 PNG保存 */
+function savePNG() {
+  const svg = document.getElementById('art');
+  const data = new XMLSerializer().serializeToString(svg);
+  const svgBlob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 400;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'tessellation-art.png';
+    a.click();
+  };
+  img.src = url;
+}
+
+document.getElementById('regen').onclick = generate;
+document.getElementById('save').onclick = savePNG;
+
+generate();
+</script>
+
+</body>
+</html>
