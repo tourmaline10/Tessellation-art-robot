@@ -85,37 +85,29 @@ function redraw() {
   if (shape === "square") drawSquare();
 }
 
-/* ---------- 正六角形（全面敷き詰め） ---------- */
-function hexPoints(cx, cy, r) {
-  let pts = [];
-  for (let i = 0; i < 6; i++) {
-    const a = Math.PI / 3 * i + Math.PI / 6;
-    pts.push(cx + r * Math.cos(a) + "," + (cy + r * Math.sin(a)));
-  }
-  return pts.join(" ");
-}
-
 function drawHex() {
   const r = 30;
   const dx = Math.sqrt(3) * r;
   const dy = 1.5 * r;
 
-  for (let y = -RANGE; y < RANGE; y++) {
-  for (let x = -RANGE; x < RANGE; x++) {
-    const r = document.createElementNS(NS,"rect");
-    r.setAttribute("x", x * s);
-    r.setAttribute("y", y * s);
-    r.setAttribute("width", s);
-    r.setAttribute("height", s);
-    r.setAttribute("fill", color(x, y));
-    r.setAttribute("stroke", "white");
-    r.setAttribute("stroke-width", "2");
-    layer().appendChild(r);
+  for (let row = -RANGE; row < RANGE; row++) {
+    for (let col = -RANGE; col < RANGE; col++) {
+
+      const cx = W/2 + col * dx + (row % 2) * (dx / 2);
+      const cy = H/2 + row * dy;
+
+      const p = document.createElementNS(NS,"polygon");
+      p.setAttribute("points", hexPoints(cx, cy, r));
+      p.setAttribute("fill", color(col, row));
+      p.setAttribute("stroke", "white");
+      p.setAttribute("stroke-width", "2");
+
+      layer().appendChild(p);
+    }
   }
-}
 
   document.getElementById("comment").textContent =
-    "正三角形が6つ集まると、正六角形の敷き詰めになります（120°×3）。";
+    "正六角形は 120°×3 = 360° となり、すき間なく敷き詰められます。";
 }
 
 /* ---------- 正三角形（辺でくっつく敷き詰め） ---------- */
@@ -156,8 +148,8 @@ function drawSquare() {
   for (let y = -1; y < 15; y++) {
     for (let x = -1; x < 15; x++) {
       const r = document.createElementNS(NS,"rect");
-      r.setAttribute("x", x * s);
-      r.setAttribute("y", y * s);
+　　　  r.setAttribute("x", W/2 + x * s);
+　　　　r.setAttribute("y", H/2 + y * s);
       r.setAttribute("width", s);
       r.setAttribute("height", s);
       r.setAttribute("fill", color(x, y));
